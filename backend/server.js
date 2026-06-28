@@ -20,6 +20,20 @@ const workoutSchema = new mongoose.Schema({
 
 const Workout = mongoose.model("Workout", workoutSchema);
 
+// Root route - ADD THIS
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Fitness Tracker API is running!',
+    endpoints: {
+      health: '/health',
+      workouts: '/workouts',
+      create: 'POST /workouts',
+      update: 'PUT /workouts/:id',
+      delete: 'DELETE /workouts/:id'
+    }
+  });
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Fitness Tracker API is running" });
 });
