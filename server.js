@@ -8,8 +8,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Use direct connection (not SRV)
-const MONGODB_URI = "mongodb://kibu_app:KibuVote2024@cluster0-shard-00-00.ggyc252.mongodb.net:27017,cluster0-shard-00-01.ggyc252.mongodb.net:27017,cluster0-shard-00-02.ggyc252.mongodb.net:27017/fitness_tracker?replicaSet=atlas-2uxoj6-shard-0&ssl=true&authSource=admin&retryWrites=true&w=majority";
+// Use the correct SRV connection string from MongoDB Atlas
+const MONGODB_URI = "mongodb+srv://kibu_app:KibuVote2024@cluster0.ggyc252.mongodb.net/fitness_tracker?retryWrites=true&w=majority&appName=Cluster0";
 
 console.log("Attempting to connect to MongoDB...");
 
@@ -22,7 +22,6 @@ const workoutSchema = new mongoose.Schema({
 
 const Workout = mongoose.model("Workout", workoutSchema);
 
-// ADD THIS: Connect immediately when the server starts
 let isConnected = false;
 
 async function connectToDatabase() {
@@ -34,20 +33,22 @@ async function connectToDatabase() {
   try {
     console.log("Connecting to MongoDB...");
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 30000,
+      serverSelectionTimeoutMS: 60000,
+      socketTimeoutMS: 60000,
+      connectTimeoutMS: 60000,
+      maxPoolSize: 1,
+      minPoolSize: 1,
+      family: 4
     });
     isConnected = true;
     console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection error:", error.message);
     console.error("Full error:", error);
-    // Don't exit - let the app try to connect later
   }
 }
 
-// IMPORTANT: Connect immediately when the module loads
+// Connect immediately
 connectToDatabase();
 
 app.get('/', (req, res) => {
@@ -68,7 +69,6 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/workouts", async (req, res) => {
-  // Check if MongoDB is connected
   if (mongoose.connection.readyState !== 1) {
     try {
       await connectToDatabase();
@@ -81,7 +81,7 @@ app.get("/workouts", async (req, res) => {
   }
   
   try {
-    const workouts = await Workout.find().sort({ date: -1 });
+    const workouts = await Workout.find().sort({ date: -1 }).maxTimeMS(30000);
     res.json(workouts);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch workouts", error: error.message });
@@ -89,7 +89,6 @@ app.get("/workouts", async (req, res) => {
 });
 
 app.post("/workouts", async (req, res) => {
-  // Check if MongoDB is connected
   if (mongoose.connection.readyState !== 1) {
     try {
       await connectToDatabase();
@@ -111,7 +110,6 @@ app.post("/workouts", async (req, res) => {
 });
 
 app.put("/workouts/:id", async (req, res) => {
-  // Check if MongoDB is connected
   if (mongoose.connection.readyState !== 1) {
     try {
       await connectToDatabase();
@@ -135,7 +133,6 @@ app.put("/workouts/:id", async (req, res) => {
 });
 
 app.delete("/workouts/:id", async (req, res) => {
-  // Check if MongoDB is connected
   if (mongoose.connection.readyState !== 1) {
     try {
       await connectToDatabase();
