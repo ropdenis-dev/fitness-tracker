@@ -22,6 +22,34 @@ const workoutSchema = new mongoose.Schema({
 
 const Workout = mongoose.model("Workout", workoutSchema);
 
+// ADD THIS: Connect immediately when the server starts
+let isConnected = false;
+
+async function connectToDatabase() {
+  if (isConnected) {
+    console.log("Already connected to MongoDB");
+    return;
+  }
+  
+  try {
+    console.log("Connecting to MongoDB...");
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+    });
+    isConnected = true;
+    console.log("MongoDB connected successfully");
+  } catch (error) {
+    console.error("MongoDB connection error:", error.message);
+    console.error("Full error:", error);
+    // Don't exit - let the app try to connect later
+  }
+}
+
+// IMPORTANT: Connect immediately when the module loads
+connectToDatabase();
+
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Fitness Tracker API is running!',
@@ -40,6 +68,18 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/workouts", async (req, res) => {
+  // Check if MongoDB is connected
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectToDatabase();
+    } catch (error) {
+      return res.status(503).json({ 
+        message: "Database connection is not ready", 
+        error: error.message 
+      });
+    }
+  }
+  
   try {
     const workouts = await Workout.find().sort({ date: -1 });
     res.json(workouts);
@@ -49,6 +89,18 @@ app.get("/workouts", async (req, res) => {
 });
 
 app.post("/workouts", async (req, res) => {
+  // Check if MongoDB is connected
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectToDatabase();
+    } catch (error) {
+      return res.status(503).json({ 
+        message: "Database connection is not ready", 
+        error: error.message 
+      });
+    }
+  }
+  
   try {
     const workout = new Workout(req.body);
     await workout.save();
@@ -59,6 +111,18 @@ app.post("/workouts", async (req, res) => {
 });
 
 app.put("/workouts/:id", async (req, res) => {
+  // Check if MongoDB is connected
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectToDatabase();
+    } catch (error) {
+      return res.status(503).json({ 
+        message: "Database connection is not ready", 
+        error: error.message 
+      });
+    }
+  }
+  
   try {
     const workout = await Workout.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!workout) {
@@ -71,6 +135,18 @@ app.put("/workouts/:id", async (req, res) => {
 });
 
 app.delete("/workouts/:id", async (req, res) => {
+  // Check if MongoDB is connected
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectToDatabase();
+    } catch (error) {
+      return res.status(503).json({ 
+        message: "Database connection is not ready", 
+        error: error.message 
+      });
+    }
+  }
+  
   try {
     const workout = await Workout.findByIdAndDelete(req.params.id);
     if (!workout) {
@@ -81,26 +157,6 @@ app.delete("/workouts/:id", async (req, res) => {
     res.status(400).json({ message: "Failed to delete workout", error: error.message });
   }
 });
-
-// Connect to MongoDB and export the app
-let isConnected = false;
-
-async function connectToDatabase() {
-  if (isConnected) {
-    return;
-  }
-  
-  try {
-    await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 45000,
-    });
-    isConnected = true;
-    console.log("MongoDB connected successfully");
-  } catch (error) {
-    console.error("MongoDB connection error:", error.message);
-  }
-}
 
 // For local development
 if (require.main === module) {
