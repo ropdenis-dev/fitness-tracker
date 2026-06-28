@@ -8,8 +8,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Use environment variable or fallback to hardcoded
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://kibu_app:KibuVote2024@cluster0.ggyc252.mongodb.net/fitness_tracker?retryWrites=true&w=majority";
+// Use direct connection (not SRV)
+const MONGODB_URI = "mongodb://kibu_app:KibuVote2024@cluster0-shard-00-00.ggyc252.mongodb.net:27017,cluster0-shard-00-01.ggyc252.mongodb.net:27017,cluster0-shard-00-02.ggyc252.mongodb.net:27017/fitness_tracker?replicaSet=atlas-2uxoj6-shard-0&ssl=true&authSource=admin&retryWrites=true&w=majority";
+
+console.log("Attempting to connect to MongoDB...");
 
 const workoutSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -20,7 +22,6 @@ const workoutSchema = new mongoose.Schema({
 
 const Workout = mongoose.model("Workout", workoutSchema);
 
-// Root route - ADD THIS
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Fitness Tracker API is running!',
@@ -81,19 +82,34 @@ app.delete("/workouts/:id", async (req, res) => {
   }
 });
 
-// Start server only if MongoDB connects
-async function startServer() {
+// Connect to MongoDB and export the app
+let isConnected = false;
+
+async function connectToDatabase() {
+  if (isConnected) {
+    return;
+  }
+  
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log("MongoDB connected successfully");
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
     });
+    isConnected = true;
+    console.log("MongoDB connected successfully");
   } catch (error) {
-    console.error("Failed to connect to MongoDB:", error.message);
-    console.log("Using connection string:", MONGODB_URI);
-    process.exit(1);
+    console.error("MongoDB connection error:", error.message);
   }
 }
 
-startServer();
+// For local development
+if (require.main === module) {
+  connectToDatabase().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  });
+}
+
+// Export for Vercel
+module.exports = app;
