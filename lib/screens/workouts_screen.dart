@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
-import 'workouts_detailed_screen.dart';  // Use full path
+import 'workout_detail_screen.dart';  // Use full path
 
 class WorkoutsScreen extends StatelessWidget {
   const WorkoutsScreen({super.key});
