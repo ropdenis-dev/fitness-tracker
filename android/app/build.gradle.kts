@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.ibm.fitness_tracker"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "com.ibm.fitness_tracker"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -39,5 +39,5 @@ flutter {
 }
 
 dependencies {
-    implementation 'com.google.firebase:firebase-auth'
+    implementation("com.google.firebase:firebase-auth:22.3.1")
 }
