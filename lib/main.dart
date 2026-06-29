@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => WorkoutProvider()),
+        ChangeNotifierProvider(create: (_) => WorkoutProvider()..loadWorkouts()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
       child: Consumer<SettingsProvider>(

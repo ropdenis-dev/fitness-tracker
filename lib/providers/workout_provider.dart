@@ -1,74 +1,95 @@
-﻿import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+﻿import 'package:flutter/material.dart';
 import '../models/workout.dart';
+import '../services/api_service.dart';
 
 class WorkoutProvider extends ChangeNotifier {
-  static const String _storageKey = 'fitness_tracker_workouts';
-
   List<Workout> _workouts = [];
-
-  WorkoutProvider() {
-    _loadWorkouts();
-  }
+  bool _isLoading = false;
 
   List<Workout> get workouts => _workouts;
+  bool get isLoading => _isLoading;
 
-  Future<void> _loadWorkouts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString(_storageKey);
-    if (stored != null && stored.isNotEmpty) {
-      _workouts = Workout.listFromJson(stored);
-    } else {
-      _workouts = [
-        Workout(
-          id: '1',
-          name: 'Morning Yoga',
-          duration: 30,
-          calories: 120,
-          date: DateTime.now().subtract(const Duration(days: 1)),
-        ),
-        Workout(
-          id: '2',
-          name: 'Evening Run',
-          duration: 45,
-          calories: 350,
-          date: DateTime.now().subtract(const Duration(days: 2)),
-        ),
-        Workout(
-          id: '3',
-          name: 'Strength Training',
-          duration: 50,
-          calories: 280,
-          date: DateTime.now().subtract(const Duration(days: 3)),
-        ),
-      ];
-      await _saveWorkouts();
-    }
-    notifyListeners();
-  }
-
-  Future<void> _saveWorkouts() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_storageKey, Workout.listToJson(_workouts));
-  }
-
-  void addWorkout(Workout workout) {
-    _workouts.add(workout);
-    _saveWorkouts();
-    notifyListeners();
-  }
-
-  void removeWorkout(String id) {
-    _workouts.removeWhere((workout) => workout.id == id);
-    _saveWorkouts();
-    notifyListeners();
-  }
-
-  int get totalCalories =>
-      _workouts.fold(0, (sum, workout) => sum + workout.calories);
-
+  // ===== STATISTICS GETTERS =====
+  
+  // Total number of workouts
   int get totalWorkouts => _workouts.length;
+  
+  // Total calories burned
+  int get totalCalories {
+    return _workouts.fold(0, (sum, workout) => sum + workout.calories);
+  }
+  
+  // Average duration
+  double get averageDuration {
+    if (_workouts.isEmpty) return 0;
+    int totalDuration = _workouts.fold(0, (sum, workout) => sum + workout.duration);
+    return totalDuration / _workouts.length;
+  }
+  
+  // Average calories per workout
+  double get averageCalories {
+    if (_workouts.isEmpty) return 0;
+    return totalCalories / _workouts.length;
+  }
 
-  double get averageDuration =>
-      _workouts.isEmpty ? 0 : _workouts.map((w) => w.duration).reduce((a, b) => a + b) / _workouts.length;
+  // ===== API METHODS =====
+
+  // Load workouts from API
+  Future<void> loadWorkouts() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _workouts = await ApiService.getWorkouts();
+    } catch (e) {
+      print('Error loading workouts: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Add workout to API
+  Future<void> addWorkout(Workout workout) async {
+    try {
+      final newWorkout = await ApiService.addWorkout(workout);
+      _workouts.add(newWorkout);
+      notifyListeners();
+    } catch (e) {
+      print('Error adding workout: $e');
+      rethrow;
+    }
+  }
+
+  // Update workout
+  Future<void> updateWorkout(String id, Workout workout) async {
+    try {
+      final updatedWorkout = await ApiService.updateWorkout(id, workout);
+      final index = _workouts.indexWhere((w) => w.id == id);
+      if (index != -1) {
+        _workouts[index] = updatedWorkout;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error updating workout: $e');
+      rethrow;
+    }
+  }
+
+  // Delete workout (called 'removeWorkout' for your UI)
+  Future<void> removeWorkout(String id) async {
+    try {
+      await ApiService.deleteWorkout(id);
+      _workouts.removeWhere((w) => w.id == id);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting workout: $e');
+      rethrow;
+    }
+  }
+
+  // Alternative: Same as removeWorkout (for compatibility)
+  Future<void> deleteWorkout(String id) async {
+    await removeWorkout(id);
+  }
 }
