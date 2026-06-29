@@ -47,7 +47,7 @@ class WorkoutDetailScreen extends StatelessWidget {
                         TextButton(
                           onPressed: () {
                             final provider = Provider.of<WorkoutProvider>(context, listen: false);
-                            provider.removeWorkout(workout.id);
+                            provider.removeWorkout(workout.id!);
                             Navigator.pop(ctx);
                             Navigator.pop(context); // back to workouts list
                           },
