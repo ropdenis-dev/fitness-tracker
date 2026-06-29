@@ -5,9 +5,13 @@ import '../models/user_profile.dart';
 class AuthService {
   static const String baseUrl = 'https://fitness-tracker-two-fawn.vercel.app';
 
-  static Future<Map<String, dynamic>> register({required String email, required String password, required String fullName}) async {
+  static Future<Map<String, dynamic>> register({
+    required String email,
+    required String password,
+    required String fullName,
+  }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
+      Uri.parse('$baseUrl/api/register'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
@@ -21,12 +25,15 @@ class AuthService {
       return body;
     }
 
-    throw Exception(body['message'] ?? 'Registration failed');
+    throw Exception(body['error'] ?? 'Registration failed');
   }
 
-  static Future<Map<String, dynamic>> login({required String email, required String password}) async {
+  static Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
+      Uri.parse('$baseUrl/api/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
@@ -39,12 +46,12 @@ class AuthService {
       return body;
     }
 
-    throw Exception(body['message'] ?? 'Login failed');
+    throw Exception(body['error'] ?? 'Login failed');
   }
 
   static Future<UserProfile> getProfile(String token) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/auth/profile'),
+      Uri.parse('$baseUrl/api/profile'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -56,12 +63,12 @@ class AuthService {
       return UserProfile.fromJson(body);
     }
 
-    throw Exception(body['message'] ?? 'Could not load profile');
+    throw Exception(body['error'] ?? 'Could not load profile');
   }
 
   static Future<UserProfile> updateProfile(String token, UserProfile profile) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/auth/profile'),
+      Uri.parse('$baseUrl/api/profile'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -74,6 +81,6 @@ class AuthService {
       return UserProfile.fromJson(body);
     }
 
-    throw Exception(body['message'] ?? 'Could not update profile');
+    throw Exception(body['error'] ?? 'Could not update profile');
   }
 }

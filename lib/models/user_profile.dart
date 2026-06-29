@@ -19,8 +19,8 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: json['_id']?.toString(),
-      fullName: json['fullName']?.toString() ?? 'User',
+      id: json['id']?.toString() ?? json['_id']?.toString(),
+      fullName: json['fullName']?.toString() ?? json['name']?.toString() ?? 'User',
       email: json['email']?.toString() ?? '',
       age: json['age'] is int ? json['age'] : int.tryParse(json['age']?.toString() ?? ''),
       weightKg: json['weightKg'] is num ? (json['weightKg'] as num).toDouble() : null,

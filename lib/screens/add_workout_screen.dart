@@ -1,81 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/workout.dart';
 import '../providers/workout_provider.dart';
-import 'dart:math';
+import 'workout_detail_screen.dart';
 
-class AddWorkoutScreen extends StatefulWidget {
-  @override
-  _AddWorkoutScreenState createState() => _AddWorkoutScreenState();
-}
-
-class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _durationController = TextEditingController();
-  final _caloriesController = TextEditingController();
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _durationController.dispose();
-    _caloriesController.dispose();
-    super.dispose();
-  }
-
-  void _saveWorkout() {
-    if (_formKey.currentState!.validate()) {
-      final newWorkout = Workout(
-        id: Random().nextInt(10000).toString(),
-        name: _nameController.text,
-        duration: int.parse(_durationController.text),
-        calories: int.parse(_caloriesController.text),
-        date: DateTime.now(),
-      );
-      Provider.of<WorkoutProvider>(context, listen: false).addWorkout(newWorkout);
-      Navigator.pop(context);
-    }
-  }
+class WorkoutsScreen extends StatelessWidget {
+  const WorkoutsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final workoutProvider = Provider.of<WorkoutProvider>(context);
+    final workouts = workoutProvider.workouts;
+    final isLoading = workoutProvider.isLoading;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Workout')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Workout Name', border: OutlineInputBorder()),
-                validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _durationController,
-                decoration: const InputDecoration(labelText: 'Duration (minutes)', border: OutlineInputBorder()),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Enter duration' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _caloriesController,
-                decoration: const InputDecoration(labelText: 'Calories Burned', border: OutlineInputBorder()),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Enter calories' : null,
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _saveWorkout,
-                child: const Text('Save Workout'),
-                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
-              ),
-            ],
+      appBar: AppBar(
+        title: const Text('My Workouts'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              workoutProvider.loadWorkouts();
+            },
           ),
-        ),
+        ],
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : workouts.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.fitness_center, size: 64, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text(
+                        'No workouts yet. Add one!',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: workouts.length,
+                  itemBuilder: (context, index) {
+                    final workout = workouts[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WorkoutDetailScreen(workout: workout),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: ListTile(
+                          title: Text(
+                            workout.name,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '${workout.duration} min - ${workout.calories} kcal',
+                          ),
+                          trailing: Text(
+                            '${workout.date.day}/${workout.date.month}/${workout.date.year}',
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

@@ -64,12 +64,11 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  
-// List of screens for the bottom navigation
+
   final List<Widget> _screens = [
-    DashboardScreen(),
-    WorkoutsScreen(),
-    ProfileScreen(),
+    const DashboardScreen(),
+    const WorkoutsScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -96,14 +95,6 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_getTitle()),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await context.read<AuthProvider>().logout();
-            },
-          ),
-        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -139,8 +130,21 @@ class _MainScreenState extends State<MainScreen> {
             ListTile(
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
               onTap: () async {
-                await context.read<AuthProvider>().logout();
                 Navigator.pop(context);
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Log out'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Log out')),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  await context.read<AuthProvider>().logout();
+                }
               },
             ),
           ],
@@ -153,6 +157,9 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         items: const [
           BottomNavigationBarItem(icon: SizedBox.shrink(), label: 'Dashboard'),
           BottomNavigationBarItem(icon: SizedBox.shrink(), label: 'Workouts'),
