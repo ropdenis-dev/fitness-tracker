@@ -3,14 +3,13 @@ import 'package:http/http.dart' as http;
 import '../models/workout.dart';
 
 class ApiService {
-  // Your live API URL
   static const String baseUrl = 'https://fitness-tracker-two-fawn.vercel.app';
 
-  // Get all workouts
-  static Future<List<Workout>> getWorkouts() async {
+  // Get workouts for a specific user
+  static Future<List<Workout>> getWorkouts(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/workouts'),
+        Uri.parse('$baseUrl/workouts?userId=$userId'),
         headers: {'Content-Type': 'application/json'},
       );
 

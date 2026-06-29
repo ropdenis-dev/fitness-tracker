@@ -1,32 +1,30 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/workout.dart';
 import '../services/api_service.dart';
 
 class WorkoutProvider extends ChangeNotifier {
   List<Workout> _workouts = [];
   bool _isLoading = false;
+  String? _currentUserId;
 
   List<Workout> get workouts => _workouts;
   bool get isLoading => _isLoading;
 
   // ===== STATISTICS GETTERS =====
   
-  // Total number of workouts
   int get totalWorkouts => _workouts.length;
   
-  // Total calories burned
   int get totalCalories {
     return _workouts.fold(0, (sum, workout) => sum + workout.calories);
   }
   
-  // Average duration
   double get averageDuration {
     if (_workouts.isEmpty) return 0;
     int totalDuration = _workouts.fold(0, (sum, workout) => sum + workout.duration);
     return totalDuration / _workouts.length;
   }
   
-  // Average calories per workout
   double get averageCalories {
     if (_workouts.isEmpty) return 0;
     return totalCalories / _workouts.length;
@@ -34,13 +32,21 @@ class WorkoutProvider extends ChangeNotifier {
 
   // ===== API METHODS =====
 
-  // Load workouts from API
-  Future<void> loadWorkouts() async {
+  Future<void> loadWorkouts({String? userId}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _workouts = await ApiService.getWorkouts();
+      final uid = userId ?? FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        print('No user ID available');
+        _workouts = [];
+        return;
+      }
+      
+      _currentUserId = uid;
+      _workouts = await ApiService.getWorkouts(uid);
+      print('SUCCESS: Loaded ${_workouts.length} workouts for user $uid');
     } catch (e) {
       print('Error loading workouts: $e');
     } finally {
@@ -49,10 +55,15 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  // Add workout to API
   Future<void> addWorkout(Workout workout) async {
+    if (_currentUserId == null) {
+      print('No user ID available');
+      return;
+    }
+    
     try {
-      final newWorkout = await ApiService.addWorkout(workout);
+      final workoutWithUser = workout.copyWith(userId: _currentUserId);
+      final newWorkout = await ApiService.addWorkout(workoutWithUser);
       _workouts.add(newWorkout);
       notifyListeners();
     } catch (e) {
@@ -61,7 +72,6 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  // Update workout
   Future<void> updateWorkout(String id, Workout workout) async {
     try {
       final updatedWorkout = await ApiService.updateWorkout(id, workout);
@@ -76,7 +86,6 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  // Delete workout (called 'removeWorkout' for your UI)
   Future<void> removeWorkout(String id) async {
     try {
       await ApiService.deleteWorkout(id);
@@ -88,7 +97,6 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  // Alternative: Same as removeWorkout (for compatibility)
   Future<void> deleteWorkout(String id) async {
     await removeWorkout(id);
   }

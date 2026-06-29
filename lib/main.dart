@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/workout_provider.dart';
+import 'providers/auth_provider.dart';
+import 'screens/auth_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/workouts_screen.dart';
 import 'screens/profile_screen.dart';
@@ -13,15 +15,18 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});  // ← ADD THIS
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProvider()..loadWorkouts()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-      child: Consumer<SettingsProvider>(
-        builder: (context, settings, child) {
+      child: Consumer2<AuthProvider, SettingsProvider>(
+        builder: (context, authProvider, settings, child) {
           return MaterialApp(
             title: 'Fitness Tracker',
             theme: ThemeData(
@@ -39,7 +44,9 @@ class MyApp extends StatelessWidget {
               ),
             ),
             themeMode: settings.themeMode,
-            home: MainScreen(),
+            home: authProvider.isAuthenticated
+                ? const MainScreen()
+                : const AuthScreen(),
             debugShowCheckedModeBanner: false,
           );
         },
@@ -49,12 +56,16 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  
+// List of screens for the bottom navigation
   final List<Widget> _screens = [
     DashboardScreen(),
     WorkoutsScreen(),
@@ -85,6 +96,14 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_getTitle()),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await context.read<AuthProvider>().logout();
+            },
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -103,7 +122,7 @@ class _MainScreenState extends State<MainScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()),
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
                 );
               },
             ),
@@ -113,8 +132,15 @@ class _MainScreenState extends State<MainScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => GoalsScreen()),
+                  MaterialPageRoute(builder: (context) => const GoalsScreen()),
                 );
+              },
+            ),
+            ListTile(
+              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                await context.read<AuthProvider>().logout();
+                Navigator.pop(context);
               },
             ),
           ],
