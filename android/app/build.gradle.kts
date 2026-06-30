@@ -13,24 +13,29 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     defaultConfig {
         applicationId = "com.ibm.fitness_tracker"
         minSdk = flutter.minSdkVersion
         targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
-    }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+        }
     }
 }
 
@@ -39,5 +44,5 @@ flutter {
 }
 
 dependencies {
-    implementation("com.google.firebase:firebase-auth:22.3.1")
+    implementation("androidx.multidex:multidex:2.0.1")
 }
