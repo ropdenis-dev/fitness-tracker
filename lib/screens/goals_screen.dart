@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -11,12 +12,18 @@ class _GoalsScreenState extends State<GoalsScreen> {
   int _stepGoal = 10000;
   int _calorieGoal = 2000;
   int _activeDaysGoal = 5;
-  int _hydrationGoal = 8;  // Added hydration goal
+  int _hydrationGoal = 8;
 
   final _stepController = TextEditingController();
   final _calorieController = TextEditingController();
   final _activeDaysController = TextEditingController();
-  final _hydrationController = TextEditingController();  // Added controller
+  final _hydrationController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGoals();
+  }
 
   @override
   void dispose() {
@@ -25,6 +32,24 @@ class _GoalsScreenState extends State<GoalsScreen> {
     _activeDaysController.dispose();
     _hydrationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadGoals() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _stepGoal = prefs.getInt('stepGoal') ?? 10000;
+      _calorieGoal = prefs.getInt('calorieGoal') ?? 2000;
+      _activeDaysGoal = prefs.getInt('activeDaysGoal') ?? 5;
+      _hydrationGoal = prefs.getInt('hydrationGoal') ?? 8;
+    });
+  }
+
+  Future<void> _saveGoals() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('stepGoal', _stepGoal);
+    await prefs.setInt('calorieGoal', _calorieGoal);
+    await prefs.setInt('activeDaysGoal', _activeDaysGoal);
+    await prefs.setInt('hydrationGoal', _hydrationGoal);
   }
 
   void _openEditGoalsDialog() {
@@ -56,7 +81,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Active Days Goal'),
               ),
-              // Added hydration field
               TextField(
                 controller: _hydrationController,
                 keyboardType: TextInputType.number,
@@ -77,7 +101,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   _activeDaysGoal = int.tryParse(_activeDaysController.text) ?? _activeDaysGoal;
                   _hydrationGoal = int.tryParse(_hydrationController.text) ?? _hydrationGoal;
                 });
+                _saveGoals();
                 Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Goals saved successfully')),
+                );
               },
               child: const Text('Save'),
             ),
@@ -127,7 +155,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
             const SizedBox(height: 16),
             _buildGoalCard('Weekly Active Days', '$_activeDaysGoal days', 'Stay active most days of the week.', theme.colorScheme.primaryContainer, theme.textTheme),
             const SizedBox(height: 16),
-            // Added hydration goal card
             _buildGoalCard('Hydration Goal', '$_hydrationGoal cups', 'Stay hydrated throughout the day.', theme.colorScheme.secondaryContainer, theme.textTheme),
             const SizedBox(height: 24),
             ElevatedButton(

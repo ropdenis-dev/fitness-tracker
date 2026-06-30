@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/workout_provider.dart';
 import 'stats_screen.dart';
-// import 'workouts_screen.dart';
 import 'add_workout_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -18,6 +19,22 @@ class DashboardContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final workoutProvider = Provider.of<WorkoutProvider>(context);
+    final workouts = workoutProvider.workouts;
+
+    // Calculate stats from workouts
+    int totalCalories = 0;
+    int totalDuration = 0;
+    int totalWater = 0;
+
+    for (var workout in workouts) {
+      totalCalories += workout.calories;
+      totalDuration += workout.duration;
+      totalWater += workout.waterIntake;
+    }
+
+    // Mock steps (you can add step tracking later)
+    String steps = '8,234';
 
     return SafeArea(
       child: ListView(
@@ -71,25 +88,25 @@ class DashboardContent extends StatelessWidget {
             children: [
               _buildOverviewCard(
                 title: 'Steps',
-                value: '8,234',
+                value: steps,
                 subtitle: 'Goal 10k',
                 color: const Color(0xFF3B82F6),
               ),
               _buildOverviewCard(
                 title: 'Calories',
-                value: '1,820',
+                value: '$totalCalories',
                 subtitle: 'Burned today',
                 color: const Color(0xFFEF4444),
               ),
               _buildOverviewCard(
                 title: 'Active',
-                value: '45 min',
+                value: '${totalDuration} min',
                 subtitle: 'Focus time',
                 color: const Color(0xFF10B981),
               ),
               _buildOverviewCard(
                 title: 'Hydration',
-                value: '6 cups',
+                value: '$totalWater cups',
                 subtitle: 'Daily target',
                 color: const Color(0xFF06B6D4),
               ),

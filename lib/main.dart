@@ -15,14 +15,14 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});  // ← ADD THIS
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => WorkoutProvider()..loadWorkouts()),
+        ChangeNotifierProvider(create: (_) => WorkoutProvider()),  // Removed ..loadWorkouts()
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
       child: Consumer2<AuthProvider, SettingsProvider>(
@@ -104,7 +104,9 @@ class _MainScreenState extends State<MainScreen> {
               decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
               child: Text(
                 'Fitness Tracker',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).colorScheme.onPrimary),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
             ),
             ListTile(
@@ -128,17 +130,29 @@ class _MainScreenState extends State<MainScreen> {
               },
             ),
             ListTile(
-              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
               onTap: () async {
                 Navigator.pop(context);
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Log out'),
-                    content: const Text('Are you sure you want to log out?'),
+                    title: const Text('Logout'),
+                    content: const Text('Are you sure you want to logout?'),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Log out')),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -161,9 +175,18 @@ class _MainScreenState extends State<MainScreen> {
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         items: const [
-          BottomNavigationBarItem(icon: SizedBox.shrink(), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: SizedBox.shrink(), label: 'Workouts'),
-          BottomNavigationBarItem(icon: SizedBox.shrink(), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: SizedBox.shrink(),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: SizedBox.shrink(),
+            label: 'Workouts',
+          ),
+          BottomNavigationBarItem(
+            icon: SizedBox.shrink(),
+            label: 'Profile',
+          ),
         ],
       ),
     );
