@@ -36,6 +36,7 @@ const workoutSchema = new mongoose.Schema({
   name: { type: String, required: true },
   duration: { type: Number, required: true },
   calories: { type: Number, required: true },
+  waterIntake: { type: Number, default: 0 },
   date: { type: Date, default: Date.now }
 });
 

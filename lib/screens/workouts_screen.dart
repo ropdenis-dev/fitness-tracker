@@ -16,18 +16,17 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   @override
   void initState() {
     super.initState();
-    // Load workouts when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadWorkouts();
     });
   }
 
   Future<void> _loadWorkouts() async {
-    final provider = context.read<WorkoutProvider>();
     final authProvider = context.read<AuthProvider>();
+    final provider = context.read<WorkoutProvider>();
     
-    if (authProvider.isAuthenticated) {
-      await provider.loadWorkouts();
+    if (authProvider.isAuthenticated && authProvider.token != null) {
+      await provider.loadWorkouts(token: authProvider.token);
     }
   }
 
@@ -73,7 +72,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // FT Logo instead of emoji
             Container(
               width: 80,
               height: 80,
@@ -159,7 +157,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  '${workout.duration} min - ${workout.calories} kcal',
+                  '${workout.duration} min - ${workout.calories} kcal - ${workout.waterIntake} cups water',
                 ),
                 trailing: Text(
                   '${workout.date.day}/${workout.date.month}/${workout.date.year}',

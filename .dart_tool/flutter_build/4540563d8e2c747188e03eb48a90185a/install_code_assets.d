@@ -1,0 +1,1 @@
+ C:\\Users\\denis\\fitness_tracker\\.dart_tool\\flutter_build\\4540563d8e2c747188e03eb48a90185a\\native_assets.json: 

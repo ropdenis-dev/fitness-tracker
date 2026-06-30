@@ -2,26 +2,27 @@ import 'package:flutter/material.dart';
 
 class SettingsProvider extends ChangeNotifier {
   bool _notificationsEnabled = true;
-  bool _darkMode = false;
-  bool _autoSync = true;
+  bool _isDarkMode = false;
+  bool _autoSyncEnabled = true;
 
   bool get notificationsEnabled => _notificationsEnabled;
-  bool get darkMode => _darkMode;
-  bool get autoSync => _autoSync;
-  ThemeMode get themeMode => _darkMode ? ThemeMode.dark : ThemeMode.light;
+  bool get isDarkMode => _isDarkMode;
+  bool get autoSyncEnabled => _autoSyncEnabled;
 
-  void setNotificationsEnabled(bool value) {
+  ThemeMode get themeMode => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+
+  void toggleNotifications(bool value) {
     _notificationsEnabled = value;
     notifyListeners();
   }
 
-  void setDarkMode(bool value) {
-    _darkMode = value;
+  void toggleTheme(bool value) {
+    _isDarkMode = value;
     notifyListeners();
   }
 
-  void setAutoSync(bool value) {
-    _autoSync = value;
+  void toggleAutoSync(bool value) {
+    _autoSyncEnabled = value;
     notifyListeners();
   }
 }

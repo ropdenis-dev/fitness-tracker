@@ -1,18 +1,14 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/workout.dart';
 import '../services/api_service.dart';
 
 class WorkoutProvider extends ChangeNotifier {
   List<Workout> _workouts = [];
   bool _isLoading = false;
-  String? _currentUserId;
 
   List<Workout> get workouts => _workouts;
   bool get isLoading => _isLoading;
 
-  // ===== STATISTICS GETTERS =====
-  
   int get totalWorkouts => _workouts.length;
   
   int get totalCalories {
@@ -30,23 +26,19 @@ class WorkoutProvider extends ChangeNotifier {
     return totalCalories / _workouts.length;
   }
 
-  // ===== API METHODS =====
-
-  Future<void> loadWorkouts({String? userId}) async {
+  Future<void> loadWorkouts({String? token}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final uid = userId ?? FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) {
-        print('No user ID available');
+      if (token == null || token.isEmpty) {
+        print('No token available');
         _workouts = [];
         return;
       }
       
-      _currentUserId = uid;
-      _workouts = await ApiService.getWorkouts(uid);
-      print('SUCCESS: Loaded ${_workouts.length} workouts for user $uid');
+      _workouts = await ApiService.getWorkouts(token);
+      print('Loaded ${_workouts.length} workouts');
     } catch (e) {
       print('Error loading workouts: $e');
     } finally {
@@ -55,15 +47,14 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addWorkout(Workout workout) async {
-    if (_currentUserId == null) {
-      print('No user ID available');
+  Future<void> addWorkout(Workout workout, String token) async {
+    if (token.isEmpty) {
+      print('No token available');
       return;
     }
     
     try {
-      final workoutWithUser = workout.copyWith(userId: _currentUserId);
-      final newWorkout = await ApiService.addWorkout(workoutWithUser);
+      final newWorkout = await ApiService.addWorkout(workout, token);
       _workouts.add(newWorkout);
       notifyListeners();
     } catch (e) {
@@ -72,9 +63,9 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateWorkout(String id, Workout workout) async {
+  Future<void> updateWorkout(String id, Workout workout, String token) async {
     try {
-      final updatedWorkout = await ApiService.updateWorkout(id, workout);
+      final updatedWorkout = await ApiService.updateWorkout(id, workout, token);
       final index = _workouts.indexWhere((w) => w.id == id);
       if (index != -1) {
         _workouts[index] = updatedWorkout;
@@ -86,9 +77,9 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> removeWorkout(String id) async {
+  Future<void> removeWorkout(String id, String token) async {
     try {
-      await ApiService.deleteWorkout(id);
+      await ApiService.deleteWorkout(id, token);
       _workouts.removeWhere((w) => w.id == id);
       notifyListeners();
     } catch (e) {
@@ -97,7 +88,7 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteWorkout(String id) async {
-    await removeWorkout(id);
+  Future<void> deleteWorkout(String id, String token) async {
+    await removeWorkout(id, token);
   }
 }

@@ -5,12 +5,14 @@ import '../models/workout.dart';
 class ApiService {
   static const String baseUrl = 'https://fitness-tracker-two-fawn.vercel.app';
 
-  // Get workouts for a specific user
-  static Future<List<Workout>> getWorkouts(String userId) async {
+  static Future<List<Workout>> getWorkouts(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/workouts?userId=$userId'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('$baseUrl/workouts'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -24,12 +26,14 @@ class ApiService {
     }
   }
 
-  // Add a new workout
-  static Future<Workout> addWorkout(Workout workout) async {
+  static Future<Workout> addWorkout(Workout workout, String token) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/workouts'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: jsonEncode(workout.toJson()),
       );
 
@@ -43,12 +47,14 @@ class ApiService {
     }
   }
 
-  // Update a workout
-  static Future<Workout> updateWorkout(String id, Workout workout) async {
+  static Future<Workout> updateWorkout(String id, Workout workout, String token) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/workouts/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: jsonEncode(workout.toJson()),
       );
 
@@ -62,12 +68,14 @@ class ApiService {
     }
   }
 
-  // Delete a workout
-  static Future<void> deleteWorkout(String id) async {
+  static Future<void> deleteWorkout(String id, String token) async {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl/workouts/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
       if (response.statusCode != 200) {

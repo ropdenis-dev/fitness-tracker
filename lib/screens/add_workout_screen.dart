@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/workout.dart';
 import '../providers/workout_provider.dart';
+import '../providers/auth_provider.dart';
 
 class AddWorkoutScreen extends StatefulWidget {
   const AddWorkoutScreen({super.key});
@@ -15,7 +16,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
   final _nameController = TextEditingController();
   final _durationController = TextEditingController();
   final _caloriesController = TextEditingController();
-  final _waterController = TextEditingController();  // Added for hydration
+  final _waterController = TextEditingController();
 
   @override
   void dispose() {
@@ -35,20 +36,24 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
       name: _nameController.text.trim(),
       duration: int.parse(_durationController.text),
       calories: int.parse(_caloriesController.text),
+      waterIntake: int.tryParse(_waterController.text) ?? 0,
     );
 
-    // Save water intake separately or store it somewhere
-    final waterIntake = int.tryParse(_waterController.text) ?? 0;
-
     try {
+      final authProvider = context.read<AuthProvider>();
       final provider = context.read<WorkoutProvider>();
-      await provider.addWorkout(workout);
+      
+      if (authProvider.token == null) {
+        throw Exception('Not authenticated');
+      }
+      
+      await provider.addWorkout(workout, authProvider.token!);
       
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Workout added! Water: $waterIntake cups'),
+            content: Text('${workout.name} added! Water: ${workout.waterIntake} cups'),
           ),
         );
       }
@@ -141,7 +146,6 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              // NEW: Water Intake Field
               TextFormField(
                 controller: _waterController,
                 decoration: const InputDecoration(
