@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'stats_screen.dart';
-import 'workouts_screen.dart';
+// import 'workouts_screen.dart';
+import 'add_workout_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -22,6 +23,7 @@ class DashboardContent extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          // Welcome Card
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
@@ -56,6 +58,8 @@ class DashboardContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          
+          // Today Overview
           Text(
             'Today overview',
             style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -92,6 +96,8 @@ class DashboardContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          
+          // Quick Actions
           Text(
             'Quick actions',
             style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -108,7 +114,9 @@ class DashboardContent extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const WorkoutsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const AddWorkoutScreen(),
+                      ),
                     );
                   },
                 ),
@@ -123,7 +131,9 @@ class DashboardContent extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const StatsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const StatsScreen(),
+                      ),
                     );
                   },
                 ),
@@ -131,6 +141,8 @@ class DashboardContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          
+          // Focus Card
           Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -149,7 +161,10 @@ class DashboardContent extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Text(
                       'Focus',
-                      style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -252,7 +267,10 @@ class DashboardContent extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: Text(
                   badge,
-                  style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

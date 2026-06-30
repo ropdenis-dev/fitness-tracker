@@ -11,16 +11,19 @@ class _GoalsScreenState extends State<GoalsScreen> {
   int _stepGoal = 10000;
   int _calorieGoal = 2000;
   int _activeDaysGoal = 5;
+  int _hydrationGoal = 8;  // Added hydration goal
 
   final _stepController = TextEditingController();
   final _calorieController = TextEditingController();
   final _activeDaysController = TextEditingController();
+  final _hydrationController = TextEditingController();  // Added controller
 
   @override
   void dispose() {
     _stepController.dispose();
     _calorieController.dispose();
     _activeDaysController.dispose();
+    _hydrationController.dispose();
     super.dispose();
   }
 
@@ -28,6 +31,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     _stepController.text = _stepGoal.toString();
     _calorieController.text = _calorieGoal.toString();
     _activeDaysController.text = _activeDaysGoal.toString();
+    _hydrationController.text = _hydrationGoal.toString();
 
     showDialog(
       context: context,
@@ -52,6 +56,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Active Days Goal'),
               ),
+              // Added hydration field
+              TextField(
+                controller: _hydrationController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Hydration Goal (cups)'),
+              ),
             ],
           ),
           actions: [
@@ -65,6 +75,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   _stepGoal = int.tryParse(_stepController.text) ?? _stepGoal;
                   _calorieGoal = int.tryParse(_calorieController.text) ?? _calorieGoal;
                   _activeDaysGoal = int.tryParse(_activeDaysController.text) ?? _activeDaysGoal;
+                  _hydrationGoal = int.tryParse(_hydrationController.text) ?? _hydrationGoal;
                 });
                 Navigator.pop(context);
               },
@@ -115,6 +126,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
             _buildGoalCard('Calories Goal', '$_calorieGoal kcal', 'Aim to burn this amount daily.', theme.colorScheme.tertiaryContainer, theme.textTheme),
             const SizedBox(height: 16),
             _buildGoalCard('Weekly Active Days', '$_activeDaysGoal days', 'Stay active most days of the week.', theme.colorScheme.primaryContainer, theme.textTheme),
+            const SizedBox(height: 16),
+            // Added hydration goal card
+            _buildGoalCard('Hydration Goal', '$_hydrationGoal cups', 'Stay hydrated throughout the day.', theme.colorScheme.secondaryContainer, theme.textTheme),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _openEditGoalsDialog,
