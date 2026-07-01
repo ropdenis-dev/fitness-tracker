@@ -89,4 +89,5 @@ fitness_tracker/
 IBM Group
 
 ## License
-© 2026 KIBU eVote. All rights reserved.
+
+© 2026 IBM Group. All rights reserved.
